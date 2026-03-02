@@ -1,396 +1,307 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>LoadMaster — EV Charge Management</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/recharts@2.8.0/umd/Recharts.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{background:#080C10;font-family:'DM Mono',monospace;color:#E8F0F8;overflow:hidden}
-  ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#080C10}::-webkit-scrollbar-thumb{background:#1A2535;border-radius:2px}
-  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(1.4)}}
-  @keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-  .fadein{animation:fadein 0.4s ease forwards}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#080C10;font-family:'DM Mono',monospace;color:#E8F0F8;height:100vh;overflow:hidden;font-size:13px}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#080C10}::-webkit-scrollbar-thumb{background:#1A2535;border-radius:2px}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.3;transform:scale(1.5)}}
+#app{display:grid;grid-template-rows:56px 1fr;height:100vh}
+#header{background:#0D1218;border-bottom:1px solid #1A2535;padding:0 24px;display:flex;align-items:center;justify-content:space-between}
+#body{display:grid;grid-template-columns:260px 1fr;overflow:hidden}
+#sidebar{background:#0D1218;border-right:1px solid #1A2535;padding:14px;overflow-y:auto;display:flex;flex-direction:column}
+#main{overflow-y:auto;padding:22px;display:flex;flex-direction:column;gap:18px}
+.logo-box{width:34px;height:34px;background:linear-gradient(135deg,#00D4FF,#0055FF);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.logo-title{font-family:'Syne',sans-serif;font-weight:800;font-size:17px;letter-spacing:.06em}
+.logo-sub{font-size:9px;color:#4A6080;letter-spacing:.14em}
+.online-pill{display:flex;align-items:center;gap:7px;font-size:11px;color:#00E676}
+.brand-pill{background:#00D4FF20;border:1px solid #00D4FF40;border-radius:6px;padding:4px 14px;font-size:11px;color:#00D4FF;font-weight:700}
+.dot{position:relative;display:inline-block;width:8px;height:8px;flex-shrink:0;vertical-align:middle}
+.dot-inner{position:absolute;inset:0;border-radius:50%}
+.pulse{animation:pulse 2s ease-in-out infinite}
+.sec-label{font-size:9px;color:#4A6080;letter-spacing:.14em;margin-bottom:8px;padding-left:2px}
+.site-pill{cursor:pointer;background:#0D1218;border:1px solid #1A2535;border-radius:8px;padding:12px 14px;transition:all .2s;margin-bottom:8px}
+.site-pill:hover{border-color:#243040}
+.site-pill.on{background:#243040;border-color:#00D4FF;box-shadow:0 0 16px #00D4FF30}
+.sp-name{font-size:13px;font-weight:700;color:#E8F0F8;margin-bottom:3px}
+.site-pill.on .sp-name{color:#00D4FF}
+.sp-addr{font-size:11px;color:#4A6080;margin-bottom:8px}
+.sp-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.sp-load{font-size:12px;font-family:monospace;font-weight:700}
+.bar-track{background:#111820;border-radius:2px;height:3px}
+.bar-fill{height:100%;border-radius:2px;transition:width 1s ease}
+.fleet-box{background:#080C10;border:1px solid #1A2535;border-radius:8px;padding:14px;margin-bottom:14px}
+.frow{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #111820;font-size:12px}
+.fk{color:#4A6080}.fv{color:#E8F0F8;font-weight:700}
+.footer{margin-top:auto;padding:10px 2px;font-size:10px;color:#4A6080;line-height:1.7}
+.site-hdr{display:flex;justify-content:space-between;align-items:flex-start}
+.site-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800}
+.site-meta{font-size:12px;color:#4A6080;margin-top:3px}
+.badges{display:flex;gap:8px}
+.badge{border-radius:6px;padding:6px 12px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:6px}
+.bg{background:#00E67618;border:1px solid #00E67640;color:#00E676}
+.bb{background:#00D4FF18;border:1px solid #00D4FF40;color:#00D4FF}
+.kpi-row{display:flex;gap:12px}
+.kpi{background:#0D1218;border:1px solid #1A2535;border-radius:10px;padding:18px 20px;flex:1;min-width:120px;position:relative;overflow:hidden}
+.kpi-line{position:absolute;top:0;left:0;right:0;height:2px}
+.kpi-lbl{font-size:10px;color:#4A6080;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
+.kpi-val{font-size:28px;font-weight:800;font-family:'Syne',sans-serif;line-height:1}
+.kpi-unit{font-size:13px;font-weight:400;color:#4A6080;margin-left:4px}
+.kpi-sub{font-size:11px;color:#4A6080;margin-top:5px}
+.mid-row{display:grid;grid-template-columns:170px 1fr;gap:12px}
+.gauge-panel{background:#0D1218;border:1px solid #1A2535;border-radius:10px;padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.chart-panel{background:#0D1218;border:1px solid #1A2535;border-radius:10px;padding:16px 14px 8px}
+.chart-hdr{font-size:10px;color:#4A6080;letter-spacing:.1em;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.legend{display:flex;gap:14px;font-size:10px}
+.bot-row{display:grid;grid-template-columns:1fr 300px;gap:12px}
+.cp-panel{background:#0D1218;border:1px solid #1A2535;border-radius:10px;padding:16px 18px}
+.cp-hdr{font-size:10px;color:#4A6080;letter-spacing:.1em;margin-bottom:8px;display:flex;justify-content:space-between}
+.cp-cols{display:grid;grid-template-columns:56px 1fr 64px 100px;gap:10px;padding:5px 0;border-bottom:1px solid #1A2535}
+.cp-ch{font-size:9px;color:#4A6080;letter-spacing:.1em}
+.cp-row{display:grid;grid-template-columns:56px 1fr 64px 100px;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #111820}
+.sb{display:inline-flex;align-items:center;gap:5px;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:700;letter-spacing:.05em;border:1px solid}
+.alerts-panel{background:#0D1218;border:1px solid #1A2535;border-radius:10px;padding:16px;display:flex;flex-direction:column}
+.al{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid #111820}
+.fleet-bar-panel{background:#0D1218;border:1px solid #1A2535;border-radius:10px;padding:16px 18px}
+.fbar{display:flex;gap:3px;height:26px;border-radius:5px;overflow:hidden}
+.fseg{display:flex;align-items:center;justify-content:center;font-size:10px;color:#000;font-weight:700;transition:width 1s ease;overflow:hidden;white-space:nowrap;padding:0 6px;min-width:60px}
+.fstats{display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:#4A6080}
 </style>
 </head>
 <body>
-<div id="root"></div>
-<script type="text/babel">
-const { useState, useEffect, useRef } = React;
-const { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } = Recharts;
-
-const C = {
-  bg:"#080C10", panel:"#0D1218", border:"#1A2535", borderBright:"#243040",
-  accent:"#00D4FF", green:"#00E676", amber:"#FFB300", red:"#FF3D57",
-  text:"#E8F0F8", muted:"#4A6080", grid:"#111820"
-};
-
-const SITES = [
-  { id:1, name:"ICEE HQ", address:"ICEE Group, Hampshire", limit:120, chargers:12, active:8 },
-  { id:2, name:"Premier Inn — Southampton", address:"Southampton, SO15", limit:80, chargers:8, active:5 },
-  { id:3, name:"Holiday Inn — Portsmouth", address:"Portsmouth, PO1", limit:60, chargers:6, active:3 },
+<div id="app">
+  <div id="header">
+    <div style="display:flex;align-items:center;gap:14px">
+      <div class="logo-box">⚡</div>
+      <div><div class="logo-title">LOADMASTER</div><div class="logo-sub">EV CHARGE MANAGEMENT SYSTEM</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:20px">
+      <div class="online-pill"><span class="dot"><span class="dot-inner pulse" style="background:#00E676"></span></span>3 SITES ONLINE</div>
+      <div style="font-size:11px;color:#4A6080" id="clock">--:--:--</div>
+      <div class="brand-pill">StormGorm Electrical</div>
+    </div>
+  </div>
+  <div id="body">
+    <div id="sidebar">
+      <div class="sec-label">MANAGED SITES</div>
+      <div id="site-pills"></div>
+      <div class="sec-label" style="margin-top:14px">FLEET OVERVIEW</div>
+      <div class="fleet-box" id="fleet-box"></div>
+      <div class="footer">
+        <div style="color:#00D4FF;font-weight:700;margin-bottom:4px">⚡ LoadMaster v1.0</div>
+        <div>OCPP 1.6J / 2.0.1 Certified</div>
+        <div>Dynamic Load Management</div>
+        <div>Multi-site · Real-time · Scalable</div>
+        <div style="margin-top:6px">© 2025 StormGorm Electrical</div>
+      </div>
+    </div>
+    <div id="main">
+      <div class="site-hdr">
+        <div><div class="site-title" id="s-name">—</div><div class="site-meta" id="s-meta">—</div></div>
+        <div class="badges">
+          <div class="badge bg"><span class="dot"><span class="dot-inner pulse" style="background:#00E676"></span></span>CONTROLLER ONLINE</div>
+          <div class="badge bb">⚡ DLM ACTIVE</div>
+        </div>
+      </div>
+      <div class="kpi-row" id="kpis"></div>
+      <div class="mid-row">
+        <div class="gauge-panel">
+          <div style="font-size:10px;color:#4A6080;letter-spacing:.1em;margin-bottom:6px;text-align:center">GRID UTILISATION</div>
+          <canvas id="gc" width="134" height="110"></canvas>
+          <div style="font-size:11px;color:#4A6080;margin-top:4px;text-align:center" id="g-sub">—</div>
+        </div>
+        <div class="chart-panel">
+          <div class="chart-hdr">
+            <span>LIVE POWER TRACE — LAST 20 MINS</span>
+            <div class="legend"><span style="color:#00D4FF">── Load</span><span style="color:#00E676">╌╌ Headroom</span><span style="color:#FF3D57">╌╌ Limit</span></div>
+          </div>
+          <canvas id="cc" style="width:100%;height:170px"></canvas>
+        </div>
+      </div>
+      <div class="bot-row">
+        <div class="cp-panel">
+          <div class="cp-hdr"><span>CHARGE POINT POWER ALLOCATION</span><span style="color:#00D4FF">Dynamic load management active</span></div>
+          <div class="cp-cols"><span class="cp-ch">UNIT</span><span class="cp-ch">ALLOCATED</span><span class="cp-ch" style="text-align:right">OUTPUT</span><span class="cp-ch" style="text-align:right">STATUS</span></div>
+          <div id="cp-list"></div>
+        </div>
+        <div class="alerts-panel">
+          <div style="font-size:10px;color:#4A6080;letter-spacing:.1em;margin-bottom:8px">SYSTEM ALERTS</div>
+          <div id="a-list"></div>
+        </div>
+      </div>
+      <div class="fleet-bar-panel">
+        <div style="font-size:10px;color:#4A6080;letter-spacing:.1em;margin-bottom:10px">COMBINED FLEET POWER DISTRIBUTION</div>
+        <div class="fbar" id="fbar"></div>
+        <div class="fstats" id="fstats"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+var SITES=[
+  {id:1,name:"ICEE HQ",address:"ICEE Group, Hampshire",limit:120,chargers:12,active:8},
+  {id:2,name:"Premier Inn — Southampton",address:"Southampton, SO15",limit:80,chargers:8,active:5},
+  {id:3,name:"Holiday Inn — Portsmouth",address:"Portsmouth, PO1",limit:60,chargers:6,active:3}
 ];
-
-const CP_NAMES = ["CP-01","CP-02","CP-03","CP-04","CP-05","CP-06","CP-07","CP-08","CP-09","CP-10","CP-11","CP-12"];
-
+var CP_NAMES=["CP-01","CP-02","CP-03","CP-04","CP-05","CP-06","CP-07","CP-08","CP-09","CP-10","CP-11","CP-12"];
+var SEG_COLS=["#00D4FF","#00E676","#FFB300"];
+var ALERTS=[
+  {t:"warning",m:"ICEE HQ — CP-07 approaching allocated limit (21.4 / 22 kW)",ts:"14:32:10"},
+  {t:"ok",m:"Premier Inn — Load management rebalanced after new session started",ts:"14:31:44"},
+  {t:"info",m:"Holiday Inn — Controller heartbeat received, all systems nominal",ts:"14:30:55"},
+  {t:"warning",m:"ICEE HQ — Site load at 88% of grid limit, headroom reducing",ts:"14:29:12"},
+  {t:"ok",m:"System — All 3 sites connected and reporting live data",ts:"14:28:00"}
+];
 function rand(a,b){return Math.random()*(b-a)+a}
-
-function makeHistory(base, limit, n=40){
-  return Array.from({length:n},(_,i)=>{
-    const t = new Date(Date.now()-(n-i)*30000);
-    const load = Math.max(limit*0.3, Math.min(limit*0.93, base + Math.sin(i*0.4)*10 + rand(-4,4)));
-    return {
-      time: t.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",second:"2-digit"}),
-      load: +load.toFixed(1),
-      headroom: +(limit-load).toFixed(1),
-      limit
-    };
+function lc(p){return p>0.9?"#FF3D57":p>0.75?"#FFB300":"#00D4FF"}
+var sel=0;
+var loads=SITES.map(function(s){return s.limit*0.62});
+var hists=SITES.map(function(s){
+  var base=s.limit*0.62;
+  return Array.from({length:40},function(_,i){
+    var l=Math.max(s.limit*0.3,Math.min(s.limit*0.93,base+Math.sin(i*0.4)*10+rand(-4,4)));
+    return{load:+l.toFixed(1),headroom:+(s.limit-l).toFixed(1),limit:s.limit};
+  });
+});
+var cps=SITES.map(function(s){return mkCPs(s.chargers,s.active,s.limit)});
+function mkCPs(count,active,limit){
+  return CP_NAMES.slice(0,count).map(function(name,i){
+    var on=i<active;
+    var alloc=on?+rand(4,Math.min(22,limit/active*1.3)).toFixed(1):0;
+    var actual=on?+(alloc*rand(0.7,1)).toFixed(1):0;
+    var status=on?(i%6===4?"Preparing":"Charging"):"Available";
+    return{name:name,status:status,alloc:alloc,actual:actual};
   });
 }
-
-function makeChargers(count, active, limit){
-  return CP_NAMES.slice(0,count).map((name,i)=>{
-    const on = i < active;
-    const alloc = on ? +rand(4, Math.min(22, limit/active*1.3)).toFixed(1) : 0;
-    const actual = on ? +(alloc*rand(0.7,1)).toFixed(1) : 0;
-    const status = on ? (i%6===4?"Preparing":"Charging") : "Available";
-    return {name, status, alloc, actual, maxKw: i<4?22:7};
-  });
-}
-
-function Dot({color, pulse}){
-  return <span style={{position:"relative",display:"inline-block",width:8,height:8,flexShrink:0}}>
-    <span style={{position:"absolute",inset:0,borderRadius:"50%",background:color,
-      ...(pulse?{animation:"pulse 2s ease-in-out infinite"}:{})}}/>
-  </span>;
-}
-
-function Badge({status}){
-  const map={Charging:[C.green],Available:[C.accent],Preparing:[C.amber],Offline:[C.red],Faulted:[C.red]};
-  const [col] = map[status]||[C.muted];
-  return <span style={{display:"inline-flex",alignItems:"center",gap:5,
-    background:col+"18",border:`1px solid ${col}40`,borderRadius:4,
-    padding:"2px 8px",fontSize:11,color:col,fontWeight:700,letterSpacing:"0.05em"}}>
-    <Dot color={col} pulse={status==="Charging"}/>{status}
-  </span>;
-}
-
-function Kpi({label, value, unit, sub, color=C.accent, icon}){
-  return <div style={{background:C.panel,border:`1px solid ${C.border}`,borderRadius:10,
-    padding:"18px 20px",flex:1,minWidth:130,position:"relative",overflow:"hidden"}}>
-    <div style={{position:"absolute",top:0,left:0,right:0,height:2,
-      background:`linear-gradient(90deg,transparent,${color},transparent)`}}/>
-    <div style={{fontSize:10,color:C.muted,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>{icon} {label}</div>
-    <div style={{fontSize:28,fontWeight:800,color,fontFamily:"'Syne',sans-serif",lineHeight:1}}>
-      {value}<span style={{fontSize:13,fontWeight:400,color:C.muted,marginLeft:4}}>{unit}</span>
-    </div>
-    {sub&&<div style={{fontSize:11,color:C.muted,marginTop:5}}>{sub}</div>}
-  </div>;
-}
-
-function Gauge({value, max, color, size=130}){
-  const pct = Math.min(value/max,1);
-  const r=44, cx=size/2, cy=size/2;
-  const sA=-210, sw=240;
-  function pt(deg,rad){const r2=(deg*Math.PI)/180;return{x:cx+rad*Math.cos(r2),y:cy+rad*Math.sin(r2)}}
-  function arc(s,e,rad){
-    const sp=pt(s,rad),ep=pt(e,rad),lg=e-s>180?1:0;
-    return `M ${sp.x} ${sp.y} A ${rad} ${rad} 0 ${lg} 1 ${ep.x} ${ep.y}`;
+function drawGauge(canvas,value,max){
+  var ctx=canvas.getContext("2d");
+  var w=canvas.width,h=canvas.height,cx=w/2,cy=h*0.58,r=44;
+  ctx.clearRect(0,0,w,h);
+  var pct=Math.min(value/max,1);
+  var sa=210*Math.PI/180,sw=240*Math.PI/180;
+  var alertCol=pct>0.9?"#FF3D57":pct>0.75?"#FFB300":"#00D4FF";
+  ctx.beginPath();ctx.arc(cx,cy,r,sa,sa+sw);ctx.strokeStyle="#1A2535";ctx.lineWidth=8;ctx.lineCap="round";ctx.stroke();
+  if(pct>0){
+    ctx.beginPath();ctx.arc(cx,cy,r,sa,sa+sw*pct);ctx.strokeStyle=alertCol;ctx.lineWidth=8;ctx.lineCap="round";
+    ctx.shadowColor=alertCol;ctx.shadowBlur=8;ctx.stroke();ctx.shadowBlur=0;
   }
-  const alertCol = pct>0.9?C.red:pct>0.75?C.amber:color;
-  return <svg width={size} height={size*0.8} viewBox={`0 0 ${size} ${size*0.85}`}>
-    <path d={arc(sA,sA+sw,r)} fill="none" stroke={C.border} strokeWidth={8} strokeLinecap="round"/>
-    {pct>0&&<path d={arc(sA,sA+sw*pct,r)} fill="none" stroke={alertCol} strokeWidth={8} strokeLinecap="round"
-      style={{filter:`drop-shadow(0 0 6px ${alertCol})`}}/>}
-    <text x={cx} y={cy+8} textAnchor="middle" fill={alertCol} fontSize={17} fontWeight={800} fontFamily="monospace">
-      {Math.round(pct*100)}%
-    </text>
-  </svg>;
+  ctx.font="bold 17px 'DM Mono',monospace";ctx.fillStyle=alertCol;ctx.textAlign="center";ctx.textBaseline="middle";
+  ctx.fillText(Math.round(pct*100)+"%",cx,cy+2);
 }
-
-function ChartTooltip({active,payload}){
-  if(!active||!payload?.length) return null;
-  return <div style={{background:"#0A0F16",border:`1px solid ${C.borderBright}`,borderRadius:6,padding:"8px 12px",fontSize:12,fontFamily:"monospace"}}>
-    <div style={{color:C.accent}}>Load: <b>{payload[0]?.value} kW</b></div>
-    <div style={{color:C.muted}}>Headroom: <b style={{color:C.green}}>{payload[1]?.value} kW</b></div>
-    <div style={{color:C.muted,marginTop:4}}>{payload[0]?.payload?.time}</div>
-  </div>;
+function drawChart(canvas,data,limit){
+  var dpr=window.devicePixelRatio||1;
+  var rect=canvas.getBoundingClientRect();
+  canvas.width=rect.width*dpr;canvas.height=rect.height*dpr;
+  var ctx=canvas.getContext("2d");ctx.scale(dpr,dpr);
+  var W=rect.width,H=rect.height;
+  var pad={top:10,right:10,bottom:24,left:36};
+  var cW=W-pad.left-pad.right,cH=H-pad.top-pad.bottom;
+  var maxY=limit+10;
+  ctx.clearRect(0,0,W,H);
+  function xp(i){return pad.left+(i/(data.length-1))*cW}
+  function yp(v){return pad.top+cH-(v/maxY)*cH}
+  ctx.strokeStyle="#111820";ctx.lineWidth=1;
+  for(var i=0;i<=4;i++){
+    var y=pad.top+(i/4)*cH;
+    ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(pad.left+cW,y);ctx.stroke();
+    ctx.fillStyle="#4A6080";ctx.font="9px 'DM Mono',monospace";ctx.textAlign="right";
+    ctx.fillText(Math.round(maxY-(i/4)*maxY),pad.left-4,y+3);
+  }
+  var limitY=yp(limit);
+  ctx.strokeStyle="#FF3D57";ctx.lineWidth=1;ctx.setLineDash([6,3]);
+  ctx.beginPath();ctx.moveTo(pad.left,limitY);ctx.lineTo(pad.left+cW,limitY);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.beginPath();ctx.moveTo(xp(0),yp(data[0].headroom));
+  data.forEach(function(d,i){if(i>0)ctx.lineTo(xp(i),yp(d.headroom))});
+  ctx.lineTo(xp(data.length-1),pad.top+cH);ctx.lineTo(xp(0),pad.top+cH);ctx.closePath();
+  ctx.fillStyle="rgba(0,230,118,0.08)";ctx.fill();
+  ctx.strokeStyle="#00E676";ctx.lineWidth=1.5;ctx.setLineDash([4,2]);
+  ctx.beginPath();data.forEach(function(d,i){i===0?ctx.moveTo(xp(0),yp(d.headroom)):ctx.lineTo(xp(i),yp(d.headroom))});
+  ctx.stroke();ctx.setLineDash([]);
+  ctx.beginPath();ctx.moveTo(xp(0),yp(data[0].load));
+  data.forEach(function(d,i){if(i>0)ctx.lineTo(xp(i),yp(d.load))});
+  ctx.lineTo(xp(data.length-1),pad.top+cH);ctx.lineTo(xp(0),pad.top+cH);ctx.closePath();
+  var grad=ctx.createLinearGradient(0,pad.top,0,pad.top+cH);
+  grad.addColorStop(0,"rgba(0,212,255,0.25)");grad.addColorStop(1,"rgba(0,212,255,0.02)");
+  ctx.fillStyle=grad;ctx.fill();
+  ctx.strokeStyle="#00D4FF";ctx.lineWidth=2;
+  ctx.beginPath();data.forEach(function(d,i){i===0?ctx.moveTo(xp(0),yp(d.load)):ctx.lineTo(xp(i),yp(d.load))});
+  ctx.stroke();
+  ctx.fillStyle="#4A6080";ctx.font="9px 'DM Mono',monospace";ctx.textAlign="center";
+  [0,10,20,30,39].forEach(function(i){
+    if(data[i]){
+      var t=new Date(Date.now()-(39-i)*30000);
+      ctx.fillText(t.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}),xp(i),H-6);
+    }
+  });
 }
-
-function CBar({c, max}){
-  const pct=c.actual/max;
-  const col=c.status==="Charging"?C.accent:c.status==="Available"?C.muted:C.amber;
-  return <div style={{display:"grid",gridTemplateColumns:"56px 1fr 64px 96px",alignItems:"center",gap:10,
-    padding:"7px 0",borderBottom:`1px solid ${C.grid}`}}>
-    <span style={{fontFamily:"monospace",fontSize:12,color:C.text}}>{c.name}</span>
-    <div style={{background:C.grid,borderRadius:3,height:6,overflow:"hidden"}}>
-      <div style={{height:"100%",width:`${pct*100}%`,background:`linear-gradient(90deg,${col},${col}80)`,
-        borderRadius:3,transition:"width 0.8s ease",boxShadow:`0 0 8px ${col}50`}}/>
-    </div>
-    <span style={{fontFamily:"monospace",fontSize:12,color:col,textAlign:"right"}}>{c.actual>0?c.actual+" kW":"—"}</span>
-    <div style={{textAlign:"right"}}><Badge status={c.status}/></div>
-  </div>;
+function badge(status){
+  var map={Charging:["#00E676","#00E67618","#00E67640"],Available:["#00D4FF","#00D4FF18","#00D4FF40"],Preparing:["#FFB300","#FFB30018","#FFB30040"],Offline:["#FF3D57","#FF3D5718","#FF3D5740"]};
+  var m=map[status]||["#4A6080","#4A608018","#4A608040"];
+  var dot=status==="Charging"?'<span class="dot" style="width:7px;height:7px"><span class="dot-inner pulse" style="background:'+m[0]+'"></span></span>':'<span class="dot" style="width:7px;height:7px"><span class="dot-inner" style="background:'+m[0]+'"></span></span>';
+  return '<span class="sb" style="background:'+m[1]+';border-color:'+m[2]+';color:'+m[0]+'">'+dot+status+'</span>';
 }
-
-function SitePill({site, selected, onClick, load}){
-  const pct=load/site.limit;
-  const col=pct>0.9?C.red:pct>0.75?C.amber:C.green;
-  return <div onClick={onClick} style={{cursor:"pointer",background:selected?C.borderBright:C.panel,
-    border:`1px solid ${selected?C.accent:C.border}`,borderRadius:8,padding:"12px 14px",
-    transition:"all 0.2s",boxShadow:selected?`0 0 16px ${C.accent}30`:"none",marginBottom:8}}>
-    <div style={{fontSize:13,fontWeight:700,color:selected?C.accent:C.text,marginBottom:3}}>{site.name}</div>
-    <div style={{fontSize:11,color:C.muted,marginBottom:8}}>📍 {site.address}</div>
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-      <span style={{fontSize:11,color:C.muted}}>{site.active}/{site.chargers} active</span>
-      <span style={{fontSize:12,fontFamily:"monospace",color:col,fontWeight:700}}>{load.toFixed(1)}/{site.limit} kW</span>
-    </div>
-    <div style={{background:C.grid,borderRadius:2,height:3}}>
-      <div style={{height:"100%",width:`${pct*100}%`,background:col,borderRadius:2,transition:"width 1s ease"}}/>
-    </div>
-  </div>;
+function render(){
+  var site=SITES[sel],load=loads[sel],pct=load/site.limit,col=lc(pct),hr=site.limit-load;
+  var scps=cps[sel],act=scps.filter(function(c){return c.status==="Charging"}).length;
+  var del=scps.reduce(function(a,c){return a+c.actual},0);
+  var tf=loads.reduce(function(a,b){return a+b},0);
+  // Sidebar pills
+  document.getElementById("site-pills").innerHTML=SITES.map(function(s,i){
+    var l=loads[i],p=l/s.limit,c=lc(p);
+    return '<div class="site-pill'+(i===sel?" on":"")+'" onclick="go('+i+')"><div class="sp-name">'+s.name+'</div><div class="sp-addr">📍 '+s.address+'</div><div class="sp-row"><span style="font-size:11px;color:#4A6080">'+s.active+'/'+s.chargers+' active</span><span class="sp-load" style="color:'+c+'">'+l.toFixed(1)+'/'+s.limit+' kW</span></div><div class="bar-track"><div class="bar-fill" style="width:'+(p*100)+'%;background:'+c+'"></div></div></div>';
+  }).join("");
+  // Fleet box
+  var tact=SITES.reduce(function(a,_,i){return a+cps[i].filter(function(c){return c.status==="Charging"}).length},0);
+  document.getElementById("fleet-box").innerHTML=[["Total Sites","3"],["Total Chargers","26"],["Active Sessions",""+tact],["Total Fleet Load",tf.toFixed(1)+" kW"],["Combined Headroom",SITES.reduce(function(a,s,i){return a+s.limit-loads[i]},0).toFixed(1)+" kW"]].map(function(r){return'<div class="frow"><span class="fk">'+r[0]+'</span><span class="fv">'+r[1]+'</span></div>'}).join("");
+  // Site header
+  document.getElementById("s-name").textContent=site.name;
+  document.getElementById("s-meta").innerHTML='📍 '+site.address+' &nbsp;·&nbsp; Grid limit: <span style="color:#00D4FF">'+site.limit+' kW</span> &nbsp;·&nbsp; '+site.chargers+' charge points';
+  // KPIs
+  document.getElementById("kpis").innerHTML=[
+    {l:"Site Load",v:load.toFixed(1),u:"kW",s:(pct*100).toFixed(0)+"% of grid limit",c:col,i:"⚡"},
+    {l:"Headroom",v:hr.toFixed(1),u:"kW",s:"Available capacity",c:"#00E676",i:"▲"},
+    {l:"Active Sessions",v:act,u:"",s:"of "+site.chargers+" charge points",c:"#00D4FF",i:"🔌"},
+    {l:"Delivering",v:del.toFixed(1),u:"kW",s:"Across all chargers",c:"#FFB300",i:"⚡"}
+  ].map(function(k){return'<div class="kpi"><div class="kpi-line" style="background:linear-gradient(90deg,transparent,'+k.c+',transparent)"></div><div class="kpi-lbl">'+k.i+' '+k.l+'</div><div class="kpi-val" style="color:'+k.c+'">'+k.v+'<span class="kpi-unit">'+k.u+'</span></div><div class="kpi-sub">'+k.s+'</div></div>'}).join("");
+  // Gauge
+  drawGauge(document.getElementById("gc"),load,site.limit);
+  document.getElementById("g-sub").textContent=load.toFixed(1)+" / "+site.limit+" kW";
+  // Chart
+  drawChart(document.getElementById("cc"),hists[sel],site.limit);
+  // Chargers
+  document.getElementById("cp-list").innerHTML=scps.map(function(c){
+    var p=c.actual/22,cc2=c.status==="Charging"?"#00D4FF":c.status==="Available"?"#4A6080":"#FFB300";
+    return'<div class="cp-row"><span style="font-family:monospace;font-size:12px;color:#E8F0F8">'+c.name+'</span><div class="bar-track" style="height:6px;border-radius:3px"><div style="height:100%;width:'+(p*100)+'%;background:'+cc2+';border-radius:3px;transition:width .8s ease;box-shadow:0 0 8px '+cc2+'50"></div></div><span style="font-family:monospace;font-size:12px;color:'+cc2+';text-align:right">'+(c.actual>0?c.actual+' kW':'—')+'</span><div style="text-align:right">'+badge(c.status)+'</div></div>';
+  }).join("");
+  // Alerts
+  var ac={warning:"#FFB300",error:"#FF3D57",info:"#00D4FF",ok:"#00E676"};
+  var ai={warning:"⚠",error:"✕",info:"ℹ",ok:"✓"};
+  document.getElementById("a-list").innerHTML=ALERTS.map(function(a){return'<div class="al"><span style="color:'+ac[a.t]+';font-weight:700;font-size:14px;margin-top:1px;flex-shrink:0">'+ai[a.t]+'</span><div><div style="font-size:12px;color:#E8F0F8;line-height:1.5">'+a.m+'</div><div style="font-size:10px;color:#4A6080;font-family:monospace;margin-top:2px">'+a.ts+'</div></div></div>'}).join("");
+  // Fleet bar
+  document.getElementById("fbar").innerHTML=SITES.map(function(s,i){var w=(loads[i]/tf)*100;return'<div class="fseg" style="width:'+w+'%;background:'+SEG_COLS[i]+'">'+s.name.split(" — ")[0]+" · "+loads[i].toFixed(1)+" kW</div>"}).join("");
+  document.getElementById("fstats").innerHTML='<span>Fleet load: <b style="color:#E8F0F8">'+tf.toFixed(1)+' kW</b></span><span>Combined limit: <b style="color:#E8F0F8">'+SITES.reduce(function(a,s){return a+s.limit},0)+' kW</b></span><span>Fleet headroom: <b style="color:#00E676">'+SITES.reduce(function(a,s,i){return a+s.limit-loads[i]},0).toFixed(1)+' kW</b></span>';
 }
-
-function Alert({type, message, time}){
-  const cols={warning:C.amber,error:C.red,info:C.accent,ok:C.green};
-  const icons={warning:"⚠",error:"✕",info:"ℹ",ok:"✓"};
-  const c=cols[type]||C.muted;
-  return <div style={{display:"flex",alignItems:"flex-start",gap:10,padding:"9px 0",borderBottom:`1px solid ${C.grid}`}}>
-    <span style={{color:c,fontWeight:700,fontSize:14,marginTop:1,flexShrink:0}}>{icons[type]}</span>
-    <div style={{flex:1}}>
-      <div style={{fontSize:12,color:C.text,lineHeight:1.5}}>{message}</div>
-      <div style={{fontSize:10,color:C.muted,fontFamily:"monospace",marginTop:2}}>{time}</div>
-    </div>
-  </div>;
-}
-
-const ALERTS = [
-  {type:"warning",message:"ICEE HQ — CP-07 approaching allocated limit (21.4 / 22 kW)",time:"14:32:10"},
-  {type:"ok",message:"Premier Inn — Load management rebalanced after new session started",time:"14:31:44"},
-  {type:"info",message:"Holiday Inn — Controller heartbeat received, all systems nominal",time:"14:30:55"},
-  {type:"warning",message:"ICEE HQ — Site load at 88% of grid limit, headroom reducing",time:"14:29:12"},
-  {type:"ok",message:"System — All 3 sites connected and reporting live data",time:"14:28:00"},
-];
-
-function App(){
-  const [sel, setSel] = useState(0);
-  const [loads, setLoads] = useState(()=>SITES.map(s=>s.limit*0.62));
-  const [hist, setHist] = useState(()=>SITES.map(s=>makeHistory(s.limit*0.62,s.limit)));
-  const [cps, setCps] = useState(()=>SITES.map(s=>makeChargers(s.chargers,s.active,s.limit)));
-  const [now, setNow] = useState(new Date().toLocaleTimeString("en-GB"));
-
-  useEffect(()=>{
-    const iv = setInterval(()=>{
-      setNow(new Date().toLocaleTimeString("en-GB"));
-      setLoads(prev=>prev.map((l,i)=>{
-        const s=SITES[i];
-        return Math.max(s.limit*0.3, Math.min(s.limit*0.93, l+rand(-2.5,2.5)));
-      }));
-      setHist(prev=>prev.map((h,i)=>{
-        const s=SITES[i];
-        const last=h[h.length-1];
-        const nl=Math.max(s.limit*0.3,Math.min(s.limit*0.93,last.load+rand(-2.5,2.5)));
-        const t=new Date();
-        return [...h.slice(-39),{
-          time:t.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",second:"2-digit"}),
-          load:+nl.toFixed(1), headroom:+(s.limit-nl).toFixed(1), limit:s.limit
-        }];
-      }));
-      setCps(prev=>prev.map(clist=>clist.map(c=>{
-        if(c.status!=="Charging") return c;
-        return {...c, actual:Math.max(0,+(c.actual+rand(-0.4,0.4)).toFixed(1))};
-      })));
-    },2000);
-    return ()=>clearInterval(iv);
-  },[]);
-
-  const site=SITES[sel];
-  const load=loads[sel];
-  const pct=load/site.limit;
-  const lc=pct>0.9?C.red:pct>0.75?C.amber:C.accent;
-  const headroom=site.limit-load;
-  const scps=cps[sel];
-  const totalDel=scps.reduce((a,c)=>a+c.actual,0);
-  const activeSess=scps.filter(c=>c.status==="Charging").length;
-  const totalFleetLoad=loads.reduce((a,b)=>a+b,0);
-
-  return <div style={{height:"100vh",display:"grid",gridTemplateRows:"56px 1fr",fontFamily:"'DM Mono',monospace"}}>
-
-    {/* Header */}
-    <div style={{background:C.panel,borderBottom:`1px solid ${C.border}`,
-      padding:"0 24px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-      <div style={{display:"flex",alignItems:"center",gap:14}}>
-        <div style={{width:34,height:34,background:`linear-gradient(135deg,${C.accent},#0055FF)`,
-          borderRadius:7,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>⚡</div>
-        <div>
-          <div style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:17,letterSpacing:"0.06em"}}>LOADMASTER</div>
-          <div style={{fontSize:9,color:C.muted,letterSpacing:"0.14em"}}>EV CHARGE MANAGEMENT SYSTEM</div>
-        </div>
-      </div>
-      <div style={{display:"flex",alignItems:"center",gap:20}}>
-        <div style={{display:"flex",alignItems:"center",gap:7,fontSize:11,color:C.green}}>
-          <Dot color={C.green} pulse/> 3 SITES ONLINE
-        </div>
-        <div style={{fontSize:11,color:C.muted}}>{now}</div>
-        <div style={{background:C.accent+"20",border:`1px solid ${C.accent}40`,borderRadius:6,
-          padding:"4px 14px",fontSize:11,color:C.accent,fontWeight:700}}>StormGorm Electrical</div>
-      </div>
-    </div>
-
-    {/* Body */}
-    <div style={{display:"grid",gridTemplateColumns:"256px 1fr",overflow:"hidden"}}>
-
-      {/* Sidebar */}
-      <div style={{background:C.panel,borderRight:`1px solid ${C.border}`,padding:14,overflowY:"auto",display:"flex",flexDirection:"column"}}>
-        <div style={{fontSize:9,color:C.muted,letterSpacing:"0.14em",marginBottom:8,paddingLeft:2}}>MANAGED SITES</div>
-        {SITES.map((s,i)=><SitePill key={s.id} site={s} selected={i===sel} onClick={()=>setSel(i)} load={loads[i]}/>)}
-
-        <div style={{fontSize:9,color:C.muted,letterSpacing:"0.14em",margin:"14px 0 8px",paddingLeft:2}}>FLEET OVERVIEW</div>
-        <div style={{background:C.bg,border:`1px solid ${C.border}`,borderRadius:8,padding:14,marginBottom:14}}>
-          {[
-            ["Total Sites","3"],
-            ["Total Chargers","26"],
-            ["Active Sessions",`${SITES.reduce((a,_,i)=>a+cps[i].filter(c=>c.status==="Charging").length,0)}`],
-            ["Total Fleet Load",`${totalFleetLoad.toFixed(1)} kW`],
-            ["Combined Headroom",`${SITES.reduce((a,s,i)=>a+s.limit-loads[i],0).toFixed(1)} kW`],
-          ].map(([k,v])=><div key={k} style={{display:"flex",justifyContent:"space-between",
-            padding:"5px 0",borderBottom:`1px solid ${C.grid}`,fontSize:12}}>
-            <span style={{color:C.muted}}>{k}</span>
-            <span style={{color:C.text,fontWeight:700}}>{v}</span>
-          </div>)}
-        </div>
-
-        <div style={{marginTop:"auto",padding:"10px 2px",fontSize:10,color:C.muted,lineHeight:1.7}}>
-          <div style={{color:C.accent,marginBottom:4,fontWeight:700}}>⚡ LoadMaster v1.0</div>
-          <div>OCPP 1.6J / 2.0.1 Certified</div>
-          <div>Dynamic Load Management</div>
-          <div>Multi-site · Real-time · Scalable</div>
-          <div style={{marginTop:6,color:C.muted}}>© 2025 StormGorm Electrical</div>
-        </div>
-      </div>
-
-      {/* Main */}
-      <div style={{overflowY:"auto",padding:22,display:"flex",flexDirection:"column",gap:18}}>
-
-        {/* Site title */}
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-          <div>
-            <div style={{fontFamily:"'Syne',sans-serif",fontSize:22,fontWeight:800}}>{site.name}</div>
-            <div style={{fontSize:12,color:C.muted,marginTop:3}}>
-              📍 {site.address} &nbsp;·&nbsp; Grid limit: <span style={{color:C.accent}}>{site.limit} kW</span>
-              &nbsp;·&nbsp; {site.chargers} charge points
-            </div>
-          </div>
-          <div style={{display:"flex",gap:8}}>
-            <div style={{background:C.green+"18",border:`1px solid ${C.green}40`,borderRadius:6,
-              padding:"6px 12px",fontSize:11,color:C.green,fontWeight:700,display:"flex",alignItems:"center",gap:6}}>
-              <Dot color={C.green} pulse/> CONTROLLER ONLINE
-            </div>
-            <div style={{background:C.accent+"18",border:`1px solid ${C.accent}40`,borderRadius:6,
-              padding:"6px 12px",fontSize:11,color:C.accent,fontWeight:700}}>⚡ DLM ACTIVE</div>
-          </div>
-        </div>
-
-        {/* KPIs */}
-        <div style={{display:"flex",gap:12}}>
-          <Kpi label="Site Load" value={load.toFixed(1)} unit="kW" sub={`${(pct*100).toFixed(0)}% of grid limit`} color={lc} icon="⚡"/>
-          <Kpi label="Headroom" value={headroom.toFixed(1)} unit="kW" sub="Available capacity" color={C.green} icon="▲"/>
-          <Kpi label="Active Sessions" value={activeSess} unit="" sub={`of ${site.chargers} charge points`} color={C.accent} icon="🔌"/>
-          <Kpi label="Delivering" value={totalDel.toFixed(1)} unit="kW" sub="Across all chargers" color={C.amber} icon="⚡"/>
-        </div>
-
-        {/* Gauge + Chart */}
-        <div style={{display:"grid",gridTemplateColumns:"170px 1fr",gap:12}}>
-          <div style={{background:C.panel,border:`1px solid ${C.border}`,borderRadius:10,padding:18,
-            display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
-            <div style={{fontSize:10,color:C.muted,letterSpacing:"0.1em",marginBottom:6,textAlign:"center"}}>GRID UTILISATION</div>
-            <Gauge value={load} max={site.limit} color={C.accent} size={134}/>
-            <div style={{fontSize:11,color:C.muted,marginTop:4,textAlign:"center"}}>{load.toFixed(1)} / {site.limit} kW</div>
-          </div>
-          <div style={{background:C.panel,border:`1px solid ${C.border}`,borderRadius:10,padding:"16px 14px 8px"}}>
-            <div style={{fontSize:10,color:C.muted,letterSpacing:"0.1em",marginBottom:10,display:"flex",justifyContent:"space-between"}}>
-              <span>LIVE POWER TRACE — LAST 20 MINS</span>
-              <span style={{display:"flex",gap:14}}>
-                <span style={{color:C.accent}}>── Load</span>
-                <span style={{color:C.green}}>╌╌ Headroom</span>
-                <span style={{color:C.red}}>╌╌ Limit</span>
-              </span>
-            </div>
-            <ResponsiveContainer width="100%" height={170}>
-              <AreaChart data={hist[sel]} margin={{top:8,right:8,left:-22,bottom:0}}>
-                <defs>
-                  <linearGradient id="lg1" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={C.accent} stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor={C.accent} stopOpacity={0.02}/>
-                  </linearGradient>
-                  <linearGradient id="lg2" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={C.green} stopOpacity={0.2}/>
-                    <stop offset="95%" stopColor={C.green} stopOpacity={0.02}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid stroke={C.grid} strokeDasharray="3 3"/>
-                <XAxis dataKey="time" tick={{fill:C.muted,fontSize:9,fontFamily:"monospace"}} tickLine={false} interval={9}/>
-                <YAxis tick={{fill:C.muted,fontSize:9,fontFamily:"monospace"}} tickLine={false} domain={[0,site.limit+10]}/>
-                <Tooltip content={<ChartTooltip/>}/>
-                <Area type="monotone" dataKey="load" stroke={C.accent} strokeWidth={2} fill="url(#lg1)" dot={false}/>
-                <Area type="monotone" dataKey="headroom" stroke={C.green} strokeWidth={1.5} fill="url(#lg2)" dot={false} strokeDasharray="4 2"/>
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Chargers + Alerts */}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 300px",gap:12}}>
-          <div style={{background:C.panel,border:`1px solid ${C.border}`,borderRadius:10,padding:"16px 18px"}}>
-            <div style={{fontSize:10,color:C.muted,letterSpacing:"0.1em",marginBottom:8,display:"flex",justifyContent:"space-between"}}>
-              <span>CHARGE POINT POWER ALLOCATION</span>
-              <span style={{color:C.accent}}>Dynamic load management active</span>
-            </div>
-            <div style={{display:"grid",gridTemplateColumns:"56px 1fr 64px 96px",gap:10,padding:"5px 0",borderBottom:`1px solid ${C.border}`}}>
-              {["UNIT","ALLOCATED","OUTPUT","STATUS"].map(h=><span key={h} style={{fontSize:9,color:C.muted,letterSpacing:"0.1em"}}>{h}</span>)}
-            </div>
-            {scps.map(c=><CBar key={c.name} c={c} max={22}/>)}
-          </div>
-          <div style={{background:C.panel,border:`1px solid ${C.border}`,borderRadius:10,padding:"16px 16px",display:"flex",flexDirection:"column"}}>
-            <div style={{fontSize:10,color:C.muted,letterSpacing:"0.1em",marginBottom:8}}>SYSTEM ALERTS</div>
-            <div style={{flex:1,overflowY:"auto"}}>
-              {ALERTS.map((a,i)=><Alert key={i} {...a}/>)}
-            </div>
-          </div>
-        </div>
-
-        {/* Fleet bar */}
-        <div style={{background:C.panel,border:`1px solid ${C.border}`,borderRadius:10,padding:"16px 18px"}}>
-          <div style={{fontSize:10,color:C.muted,letterSpacing:"0.1em",marginBottom:10}}>COMBINED FLEET POWER DISTRIBUTION</div>
-          <div style={{display:"flex",gap:3,height:26,borderRadius:5,overflow:"hidden"}}>
-            {SITES.map((s,i)=>{
-              const w=(loads[i]/totalFleetLoad)*100;
-              const cols=[C.accent,C.green,C.amber];
-              return <div key={s.id} style={{width:`${w}%`,background:cols[i],display:"flex",alignItems:"center",
-                justifyContent:"center",fontSize:10,color:"#000",fontWeight:700,transition:"width 1s ease",
-                minWidth:70,overflow:"hidden",whiteSpace:"nowrap",padding:"0 6px"}}>
-                {s.name.split(" — ")[0]} · {loads[i].toFixed(1)} kW
-              </div>;
-            })}
-          </div>
-          <div style={{display:"flex",justifyContent:"space-between",marginTop:8,fontSize:11,color:C.muted}}>
-            <span>Fleet load: <b style={{color:C.text}}>{totalFleetLoad.toFixed(1)} kW</b></span>
-            <span>Combined grid limit: <b style={{color:C.text}}>{SITES.reduce((a,s)=>a+s.limit,0)} kW</b></span>
-            <span>Fleet headroom: <b style={{color:C.green}}>{SITES.reduce((a,s,i)=>a+s.limit-loads[i],0).toFixed(1)} kW</b></span>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>;
-}
-
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+function go(i){sel=i;render()}
+// Clock
+function tick(){document.getElementById("clock").textContent=new Date().toLocaleTimeString("en-GB")}
+setInterval(tick,1000);tick();
+// Live data
+setInterval(function(){
+  loads=loads.map(function(l,i){var s=SITES[i];return Math.max(s.limit*0.3,Math.min(s.limit*0.93,l+rand(-2.5,2.5)))});
+  hists=hists.map(function(h,i){
+    var s=SITES[i],last=h[h.length-1];
+    var nl=Math.max(s.limit*0.3,Math.min(s.limit*0.93,last.load+rand(-2.5,2.5)));
+    return h.slice(-39).concat([{load:+nl.toFixed(1),headroom:+(s.limit-nl).toFixed(1),limit:s.limit}]);
+  });
+  cps=cps.map(function(cl){return cl.map(function(c){if(c.status!=="Charging")return c;return Object.assign({},c,{actual:Math.max(0,+(c.actual+rand(-0.4,0.4)).toFixed(1))})})});
+  render();
+},2000);
+render();
 </script>
 </body>
 </html>
